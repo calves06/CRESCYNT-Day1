@@ -8,6 +8,28 @@ output: html_document
 ## Learning ggplot2  
 Also working with Github for this  
 
-```{r}
+```{r, setup, echo=FALSE}
 
+library(tidyverse)
 ```
+
+
+```{r, mpg}
+mpg
+```
+
+```{r, practice.plot}
+myplot <- ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+
+myplot
+
+# above can also write like this, where you include your aesthetic mapping in your geom calls
+myplot2 <- ggplot(data=mpg)+
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+myplot2
+# but you don't want to do it because it makes things confusing. 
+# remember that ggplot2 builds off previous calls and you want to do that.
+```
+
