@@ -86,8 +86,170 @@ plot3 <- ggplot(mpg, aes(x = displ, y = hwy))+
 plot3
 ```
 
+```{r, faceting}
+plot4 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_wrap(~ manufacturer)
+
+plot4
+```
+
+```{r, theme}
+#getting rid of grey background
+plot5 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_wrap(~ manufacturer)+
+  theme_bw()
+
+plot5
+```
+
+```{r, ggthemes}
+install.packages("ggthemes")
+library(ggthemes)
+
+plot6 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_wrap(~ manufacturer)+
+  theme_wsj()
+
+plot6
+```
+
+```{r, exploring}
+plot7 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_wrap(~ manufacturer)+
+  theme_linedraw()
+
+plot7
+```
+
+```{r, exploring}
+plot8 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_grid(year~.)+
+  theme_bw()
+
+plot8
+```
+
+```{r, exploring}
+plot9 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_grid(.~fl)+
+  theme_bw()
+
+plot9
+```
 
 ```{r}
+plot10 <- ggplot(mpg, aes(x=displ, y=hwy))+
+  geom_point()+
+  geom_smooth()
+  theme_bw()
+
+plot10
+```
+
+```{r, explorin}
+plot11 <- ggplot(mpg, aes(x=displ, y=hwy, color=class))+
+  geom_point()+
+  facet_wrap(~ manufacturer, ncol=5)+
+  theme_bw()
+
+plot11
+```
+
+```{r, geoms}
+plot12 <- ggplot(mpg, aes(x = drv, y = hwy, color=drv))+
+  geom_jitter()
+
+plot12
+
+
+```
+
+```{r, boxplot}
+plot13 <- ggplot(mpg, aes(x = drv, y = hwy))+
+  geom_boxplot()
+
+plot13
+```
+
+```{r, violin}
+plot14 <- ggplot(mpg, aes(x = drv, y = hwy)) + 
+  geom_violin()
+
+plot14
+```
+
+```{r, geom_smooth}
+ggplot(data = mpg) + 
+  geom_smooth(aes(x = displ, y = hwy))
+```
+
+```{r, geoms}
+ggplot(data = mpg) + 
+  geom_point(aes(x = displ, y = hwy)) +
+  geom_smooth(aes(x = displ, y = hwy))
+```
+
+```{r}
+ggplot(data = mpg, aes(x = displ, y = hwy)) + 
+  geom_point(aes(color = class)) + 
+  geom_smooth()
+```
+
+```{r, labels}
+ggplot(data = mpg, aes(x = displ, y = hwy)) + 
+  geom_point(aes(color = class)) + 
+  geom_smooth() +
+  labs(title = "Relationship between engine size and miles per gallon (mpg)",
+         y = "Highway MPG",
+         x = "Engine displacement (liters)") +
+  theme_bw()
+```
+
+```{r, labels}
+ggplot(data = mpg, aes(x = displ, y = hwy)) + 
+  geom_point(aes(color = class)) + 
+  geom_smooth() +
+  labs(title = "Relationship between engine size and miles per gallon (mpg)",
+         y = "Highway MPG",
+         x = "Engine displacement (liters)") +
+  theme_bw()+
+  theme(text=element_text(size=16))
+```
+
+```{r, barcharts}
+ggplot(data = mpg, aes(x = fl, fill=fl)) + 
+  geom_bar()
+```
+
+```{r, barcharts2}
+ggplot(data = mpg, aes(x = fl, fill = class)) + 
+  geom_bar()
+```
+
+```{r, barcharts}
+ggplot(data = mpg, aes(x = fl, fill = class)) + 
+      geom_bar(position = "fill") #shows percentage of count
+```
+
+```{r, exporting plots}
+my_plot <- ggplot(data = mpg, aes(x = displ, y = hwy)) + 
+  geom_point(aes(color = class)) + 
+  geom_smooth() +
+  labs(title = "Relationship between engine size and mpg",
+       y = "Highway MPG",
+       x = "Engine displacement (liters)") +
+  theme_bw() +
+  theme(text=element_text(size = 16))
+
+my_plot
+
+ggsave("My_Plot.png", my_plot, width=15, height = 10)
 
 ```
 
