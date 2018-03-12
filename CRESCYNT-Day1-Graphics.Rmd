@@ -33,3 +33,61 @@ myplot2
 # remember that ggplot2 builds off previous calls and you want to do that.
 ```
 
+
+```{r, alpha.dots}
+myplot <- ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(alpha = 0.4) #darker plots have 0.4 transparency dots stacked on top of each other
+
+myplot
+```
+
+
+```{r, colored.dots}
+myplot <- ggplot(mpg, aes(x = displ, y = hwy))+
+  geom_point(aes(color=class))
+
+myplot
+
+# can also write like:
+myplot <- ggplot(mpg, aes(x = displ, y = hwy, color = class))+
+  geom_point()
+
+myplot
+```
+
+```{r, shapes}
+myplot <- ggplot(mpg, aes(x = displ, y = hwy, shape = class))+
+  geom_point()
+
+myplot # we just encountered a problem b/c there are only 6 shapes but there are 7 classes; it then removed rows
+
+# now map back to color b/c shapes look weird
+myplot <- ggplot(mpg, aes(x = displ, y = hwy, color = class))+
+  geom_point()
+
+myplot
+```
+
+## **Practice Activity:** Make a scatterplot of `hwy` vs `cty` with different sized points representing each `class` and different colors for each `fuel` type
+
+```{r, newplot}
+newplot <- ggplot(mpg, aes(x= hwy, y = cty, size = class, color=fl))+
+  geom_point()
+
+newplot #got warning message about using size for a discrete variable; not advised!
+
+```
+
+
+```{r}
+plot3 <- ggplot(mpg, aes(x = displ, y = hwy))+
+  geom_point(alpha = 0.4, color="blue") #colors can also be numbers (w/o "")
+
+plot3
+```
+
+
+```{r}
+
+```
+
