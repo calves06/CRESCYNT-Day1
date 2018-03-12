@@ -1,0 +1,13 @@
+---
+title: "CRESCYNT-Day1-Graphics"
+author: "Catie Alves"
+date: "March 12, 2018"
+output: html_document
+---
+
+## Learning ggplot2  
+Also working with Github for this  
+
+```{r}
+
+```
