@@ -1,0 +1,47 @@
+---
+title: "CRESCYNT-Day2-Tidying"
+author: "Catie Alves"
+date: "March 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Practicing Tidying Data
+### We need to first load the packages we're going to use
+
+```{r, loading.packages}
+library(tidyverse)
+
+```
+
+```{r, reading.in.data}
+gapminder <-readr::read_csv('https://raw.githubusercontent.com/jules32/2017-11-30-MBARI/gh-pages/data/gapminder.csv')
+```
+
+```{r, head.tail}
+
+head(gapminder, 2) #shows first 2 rows of dataset
+tail(gapminder) #shows last rows of dataset
+
+```
+
+```{r, structure}
+
+str(gapminder) #can also get this if you look at the data in the global environment by clicking the drop down arrow
+```
+
+```{r, dimensions}
+dim(gapminder) # gives vector of dimensions - # rows and # columns
+ncol(gapminder) # number of columns
+nrow(gapminder)# number of rows
+```
+
+```{r, unique}
+unique(gapminder$country)
+unique(gapminder$continent)
+unique(gapminder[,"continent"])
+```
+
