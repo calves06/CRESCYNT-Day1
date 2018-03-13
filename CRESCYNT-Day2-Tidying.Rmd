@@ -45,3 +45,63 @@ unique(gapminder$continent)
 unique(gapminder[,"continent"])
 ```
 
+```{r, summary}
+summary(gapminder)
+summary(gapminder$lifeExp)
+```
+
+```{r, skimr}
+# install.packages("skimr")
+library(skimr)
+skim(gapminder)
+```
+
+```{r, filter}
+dplyr::filter(gapminder, country == "Switzerland")
+```
+
+```{r, exploring.data}
+# we want to know which country has the 23 yr old life expectancy
+
+dplyr::filter(gapminder, lifeExp <30) #Afghanistan and Rwanda are lowest :(
+
+# let's look at more recent life expectancies
+dplyr::filter(gapminder, country == "Afghanistan", year == max(year))
+```
+
+```{r, select}
+dplyr::select(gapminder, year, lifeExp) #select a few columns of interest
+```
+
+```{r, deselect}
+dplyr::select(gapminder, -continent) #drops column you don't want. Since you didn't save it, you didn't override the gapminder df
+```
+
+```{r, select.filter}
+gapminder_no_cont <- dplyr::select(gapminder, -continent)
+dplyr::filter(gapminder_no_cont, year == 2007)
+```
+
+```{r, pipe operator}
+dplyr::select(gapminder, -continent) %>% 
+  dplyr::filter(year == 2007) 
+#does same thing as above. the pipe puts the result from the first step into the second step.
+```
+
+```{r, mutate}
+# mutate allows you to compute new columns
+gapminder %>% 
+  mutate(gdp = gdpPercap *pop) %>% # added gdp column at the end of the df
+  arrange(desc(gdp)) #shows highest; in descending order
+```
+
+```{r, practice}
+# finding the max gdpPercap of Egypt
+gapminder %>% 
+  select(-continent, -lifeExp) %>% 
+  filter(country == "Egypt") %>%
+  mutate(gdp = pop * gdpPercap) %>% 
+  mutate(max_gdp = max(gdp))
+
+```
+
