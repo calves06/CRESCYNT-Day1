@@ -10,29 +10,30 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Practicing Tidying Data
-### We need to first load the packages we're going to use
+## We need to first load the packages we're going to use
+## We're using Dplyr first
 
 ```{r, loading.packages}
 library(tidyverse)
 
 ```
-
+### loading gapminder dataset
 ```{r, reading.in.data}
 gapminder <-readr::read_csv('https://raw.githubusercontent.com/jules32/2017-11-30-MBARI/gh-pages/data/gapminder.csv')
 ```
-
+### examining the dataset
 ```{r, head.tail}
 
 head(gapminder, 2) #shows first 2 rows of dataset
 tail(gapminder) #shows last rows of dataset
 
 ```
-
+### looking at structure of data
 ```{r, structure}
 
 str(gapminder) #can also get this if you look at the data in the global environment by clicking the drop down arrow
 ```
-
+### dimensions of dataset
 ```{r, dimensions}
 dim(gapminder) # gives vector of dimensions - # rows and # columns
 ncol(gapminder) # number of columns
@@ -49,17 +50,17 @@ unique(gapminder[,"continent"])
 summary(gapminder)
 summary(gapminder$lifeExp)
 ```
-
+### installing skimr package
 ```{r, skimr}
 # install.packages("skimr")
 library(skimr)
 skim(gapminder)
 ```
-
+### filtering with dplyr
 ```{r, filter}
 dplyr::filter(gapminder, country == "Switzerland")
 ```
-
+### playing with the data
 ```{r, exploring.data}
 # we want to know which country has the 23 yr old life expectancy
 
@@ -68,7 +69,7 @@ dplyr::filter(gapminder, lifeExp <30) #Afghanistan and Rwanda are lowest :(
 # let's look at more recent life expectancies
 dplyr::filter(gapminder, country == "Afghanistan", year == max(year))
 ```
-
+### selecting and deselecting the data
 ```{r, select}
 dplyr::select(gapminder, year, lifeExp) #select a few columns of interest
 ```
@@ -81,20 +82,20 @@ dplyr::select(gapminder, -continent) #drops column you don't want. Since you did
 gapminder_no_cont <- dplyr::select(gapminder, -continent)
 dplyr::filter(gapminder_no_cont, year == 2007)
 ```
-
+### learning how to use the pipe operator
 ```{r, pipe operator}
 dplyr::select(gapminder, -continent) %>% 
   dplyr::filter(year == 2007) 
 #does same thing as above. the pipe puts the result from the first step into the second step.
 ```
-
+### learning mutate function to make new columns
 ```{r, mutate}
 # mutate allows you to compute new columns
 gapminder %>% 
   mutate(gdp = gdpPercap *pop) %>% # added gdp column at the end of the df
   arrange(desc(gdp)) #shows highest; in descending order
 ```
-
+### practicing using the pipe
 ```{r, practice}
 # finding the max gdpPercap of Egypt
 gapminder %>% 
@@ -103,5 +104,125 @@ gapminder %>%
   mutate(gdp = pop * gdpPercap) %>% 
   mutate(max_gdp = max(gdp))
 
+```
+### group_by function
+```{r, group_by}
+# calculating max gdp for each country in dataset
+gapminder %>% 
+  group_by(country) %>% 
+  mutate(gdp = pop * gdpPercap, max_gdp = max(gdp)) %>%
+  ungroup()
+  
+```
+### combining group_by and summarize functions
+```{r, summarize.groupby}
+gapminder %>% 
+  group_by(country) %>% 
+  mutate(gdp = pop * gdpPercap) %>% 
+  summarize (max_gdp = max(gdp)) %>% 
+  ungroup()
+
+# basically summarize only kept the columns that were grouped_by or summarized: country and max_gdp
+
+# Notice that the year is missing -- this basically summarized data for a single value (country) 
+```
+### learning how to join datasets by reading in another one (CO2) and combining it with the gap data
+```{r, joining.datasets}
+# reading in new data
+co2 <- readr::read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/co2.csv")
+```
+
+```{r, head.summary}
+head(co2)
+summary(co2)
+```
+
+```{r, filtering}
+# create new variable that is only 2007 data
+gap_2007 <- gapminder %>% 
+  dplyr::filter(year == 2007)
+
+gap_2007
+
+# checking that it pulled all the countries
+unique(gap_2007$country)
+
+length(unique(gap_2007$country)) #it did
+
+```
+### joining the datasets
+```{r, joining}
+# going to left join (gap is the main dataset, so we're left joining co2 to it)
+
+lj <- left_join(gap_2007, co2, by= "country")
+lj
+
+rj <- right_join(gap_2007, co2, by ="country") # more NA's
+
+# could full join to see where the full gaps in the data exist (by NA's) -- only what you do if the dataset isn't too big
+```
+
+## Now we're going to use Tidyr
+
+```{r, tidyr}
+AirPassengers 
+# DEF not tidy!  What do we do?
+
+# We want to work towards a long format where each column is a variable and each row is an observation 
+
+# We're actually not going to tidy this df but I want to try
+new.air <- tidyr::gather(as.data.frame(AirPassengers), "Month", 1:12)
+
+new.air
+```
+### tidying another dataframe
+```{r, tidying}
+## wide format
+gap_wide <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder_wide.csv')
+
+## yesterday's format (intermediate)
+gapminder <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv')
+
+
+```
+
+## looking at the data
+```{r, examining.data}
+head(gap_wide)
+str(gap_wide)
+
+gap_long <-  gap_wide %>% 
+  gather(key = obstype_year,
+         value = obs_values)
+
+str(gap_long)
+head(gap_long)
+tail(gap_long)
+# we've reshaped our df but the format isn't what we wanted
+```
+```{r, gathering}
+gap_wide %>% 
+  gather(observation, observ_value, -continent, -country) 
+# this df is better, but the observation column is weird -- no clear unit, there's a year in here; there's a what value and a when value in this column
+```
+ 
+### separating a column
+```{r, separating}
+gap_better <- gap_wide %>% 
+  gather(observation, observ_value, -continent, -country) %>% 
+  separate(observation, into = c("obs_type", "year"), sep = "_", convert = TRUE)
+
+head(gap_better)
+
+unique(gap_better$obs_type) # which observation types we have here 
+```
+
+### continuing to tidy data
+```{r, spreading}
+gap_better %>% 
+  spread(key = obs_type, 
+         value = observ_value)
+# key = what your call names (or columns) are going to be 
+# value = what are the values in the columns 
 ```
 
