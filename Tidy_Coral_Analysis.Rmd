@@ -1,0 +1,197 @@
+---
+title: "Tidy_Coral_Analysis"
+author: "Catie Alves"
+date: "March 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Tidying coral data -- putting what we learned to practice!
+
+```{r}
+## load libraries
+library(tidyverse)
+library(janitor) #install.packages('janitor')
+library(skimr) # install.packages('skimr')
+library(stringr) # added when we needed it for benthic data
+#install.packages("stringi")
+#library(stringi)
+
+## data filepaths/urls ----
+
+## benthic data
+benthic_url <- 'https://www.nodc.noaa.gov/archive/arc0054/0104255/1.1/data/0-data/cd08/100308OaAla03m.CSV'
+
+## buoy data
+buoy_url <- 'http://www.ndbc.noaa.gov/view_text_file.php?filename=mokh1h2010.txt.gz&dir=data/historical/stdmet/'
+```
+
+## Reading in the data from the benthic url
+```{r}
+benthic_raw <- read_csv(benthic_url)
+head(benthic_raw)
+names(benthic_raw)
+
+```
+
+```{r}
+benthic <- benthic_raw %>% 
+  janitor::clean_names() # removes capital letters and spaces!
+
+names(benthic)
+```
+
+## cleaning benthic df
+
+```{r}
+benthic <-benthic %>% 
+  select(id_name, point, x, y, id_date)
+
+head(benthic)
+```
+## want to get rid of # symbols on the sides of our id_date column
+```{r}
+benthic <- benthic %>% 
+  mutate(date = stringr::str_remove_all(id_date, "#"))
+
+head(benthic)
+
+# you can also do this to replace the # with blanks like below:
+benthic <-  benthic %>% 
+  mutate(date = stringr::str_replace_all(id_date, "#", ""))
+
+head(benthic)
+```
+## Now we're gonna make a plot
+```{r, benthic.plot}
+ggplot(benthic, aes(date, fill=id_name))+
+  geom_bar()
+```
+
+## Reading in the buoy data
+```{r, buoy.data}
+buoy <- read_csv(buoy_url)
+head(buoy) 
+
+# looks bad, let's try something else
+
+buoy <- read_table2(buoy_url)
+head(buoy)
+
+# muuuuch better!
+
+# but notice: there are 2 header rows! The second row is the units
+
+buoy_final <- buoy
+```
+
+## We're going to fix the headers
+```{r}
+## 1. overwrite column names
+names(buoy) <- str_c(names(buoy), # current header
+                  buoy %>% filter(`#YY` == "#yr"),# row1; don't say buoy[1,] 
+                  sep = "_")  ## separate by `_`
+
+## inspect
+names(buoy) ## Looks a lot better
+```
+## cleaning up a bit more b/c these column names are weird
+```{r}
+## 2. clean up a bit more to get rid of the `#`s and the `/`s. 
+names(buoy) <- str_replace_all(names(buoy), "#", "")  # replace `#` with nothing 
+names(buoy) <- str_replace_all(names(buoy), "/", "_") # replace `/` with `_`
+
+## inspect to make sure it worked
+names(buoy) #better!
+```
+## now we want to remove the first row with pseudo column names
+```{r}
+## 3. remove redundant row with units
+buoy <- buoy %>%
+  filter(YY_yr != "#yr") 
+
+# keeps all rows that do not have "#yr"; that's because that was the label for the first row and first column! 
+
+head(buoy) #worked!
+```
+
+## Plotting!
+```{r}
+# looking at sea surface temp
+ggplot(buoy, aes(WTMP_degC)) +
+  geom_bar()
+```
+## rotating tick labels
+```{r}
+ggplot(buoy, aes(WTMP_degC)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+## Now we want to join the buoy data with the benthic data!
+```{r}
+## before we join, we want to unite the date columns of the buoy data so we can join on the date column
+
+buoy <-  buoy %>%
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep ="-")
+
+head(buoy)
+```
+## JOINING THE DATASETS
+```{r}
+bb_join <- benthic %>%
+  left_join(buoy, by = "date")
+
+head(bb_join)
+
+## let's select a few columns and inspect:
+bb_join %>%
+  select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>%
+  head() 
+
+## problem! bb_join is effed up
+```
+## we want to get mean temp per day of buoy data
+
+1. We want to calculate mean WTMP_degC for hh_hr, mm_mn, across same date
+2. To begin, we convert the characters to integers
+3. Remove the 999.0 with NA
+4. In the mean calculation, ignore the NA's
+```{r, my.troubleshooting}
+
+## converting WTMP to numeric
+buoy$WTMP_degC <- as.numeric(buoy$WTMP_degC)
+
+head(buoy)
+
+## selecting only columns of interest
+small_buoy <- buoy %>%
+  select(date, hh_hr, mm_mn, WTMP_degC)
+
+head(small_buoy)
+
+##now I want to remove the NA's
+
+
+  
+```
+
+## Ross came up with a method that works! See below
+```{r, Ross.Method}
+buoy_daily <- buoy %>%
+  mutate(temp_clean = as.numeric(gsub("999.0", NA, WTMP_degC))) %>% # first need to get rid of 999's
+  group_by(date) %>% # then group by date
+  summarise(mean_temp = mean(temp_clean, na.rm=T)) # then get mean temp
+
+head(buoy_daily)
+```
+## Now try to join the datasets since we have a date column
+```{r}
+bb_join_final <- benthic %>% 
+  left_join(buoy_daily, by = "date")
+
+head(bb_join_final) #has the same number of rows as benthic, so we know the join worked!
+View(bb_join_final)
+```
